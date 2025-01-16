@@ -6,9 +6,8 @@
 //
 
 import UIKit
-import SnapKit
 
-class SearchHistoryTableViewCell: UITableViewCell {
+class SearchHistoryTableViewCell: BaseTableViewCell {
 
     private let clockImage = UIImageView()
     private let keywordLabel = UILabel()
@@ -16,33 +15,13 @@ class SearchHistoryTableViewCell: UITableViewCell {
     
     static let id = getId()
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        contentView.backgroundColor = .clear
-        configureHierarchy()
-        configureLayout()
-        configureView()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        keywordLabel.text = nil
-    }
-    
-}
-
-extension SearchHistoryTableViewCell: ViewConfiguration {
-    func configureHierarchy() {
+    override func configureHierarchy() {
         contentView.addSubview(clockImage)
         contentView.addSubview(keywordLabel)
         contentView.addSubview(cancelButton)
     }
     
-    func configureLayout() {
+    override func configureLayout() {
         clockImage.snp.makeConstraints { make in
             make.size.equalTo(40)
             make.leading.verticalEdges.equalToSuperview()
@@ -61,7 +40,7 @@ extension SearchHistoryTableViewCell: ViewConfiguration {
         }
     }
     
-    func configureView() {
+    override func configureView() {
         clockImage.image = UIImage(systemName: "clock")
         clockImage.tintColor = .black
         clockImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
@@ -76,9 +55,13 @@ extension SearchHistoryTableViewCell: ViewConfiguration {
         cancelButton.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        keywordLabel.text = nil
+    }
+    
     func configureData(_ keyword: String, _ tag: Int) {
         keywordLabel.text = keyword
         cancelButton.tag = tag
     }
-    
 }

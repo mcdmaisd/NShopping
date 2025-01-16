@@ -6,10 +6,8 @@
 //
 
 import UIKit
-import Alamofire
-import SnapKit
 
-class SearchViewController: UIViewController {
+class SearchViewController: BaseViewController {
     
     private let outlineView = UIView()
     private let tableView = UITableView()
@@ -17,15 +15,15 @@ class SearchViewController: UIViewController {
     private let recentSearchedHistoryLabel = UILabel()
     private let removeAllButton = UIButton()
         
-    private var searchHistoryList: [String] = []
+    private var searchHistoryList: [String] = UserDefaultsManager.shared.list {
+        willSet {
+            UserDefaultsManager.shared.list = newValue
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         initNavigationBar()
-        configureHierarchy()
-        configureLayout()
-        configureView()
         initTableView()
     }
     
@@ -34,29 +32,8 @@ class SearchViewController: UIViewController {
         toggleUI()
         tableView.reloadData()
     }
-}
-
-extension SearchViewController {
-    private func initNavigationBar() {
-        let searchController = UISearchController(searchResultsController: nil)
-        searchController.automaticallyShowsCancelButton = true
-        searchController.searchBar.placeholder = "브랜드, 상품, 프로필, 태그 등"
-        searchController.searchBar.delegate = self
-        
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
-        navigationItem.title = "도봉러의 쇼핑쇼핑"
-    }
     
-    private func initTableView() {
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(SearchHistoryTableViewCell.self, forCellReuseIdentifier: SearchHistoryTableViewCell.id)
-    }
-}
-
-extension SearchViewController: ViewConfiguration {
-    func configureHierarchy() {
+    override func configureHierarchy() {
         view.addSubview(outlineView)
         outlineView.addSubview(removeAllButton)
         outlineView.addSubview(recentSearchedHistoryLabel)
@@ -64,14 +41,13 @@ extension SearchViewController: ViewConfiguration {
         view.addSubview(noHistoryLabel)
     }
     
-    func configureLayout() {
+    override func configureLayout() {
         outlineView.snp.makeConstraints { make in
             make.edges.equalTo(view.safeAreaLayoutGuide)
         }
         
         removeAllButton.snp.makeConstraints { make in
             make.top.trailing.equalToSuperview()
-
         }
 
         recentSearchedHistoryLabel.snp.makeConstraints { make in
@@ -80,7 +56,6 @@ extension SearchViewController: ViewConfiguration {
             make.height.equalTo(removeAllButton)
         }
         
-                
         tableView.snp.makeConstraints { make in
             make.horizontalEdges.bottom.equalToSuperview()
             make.top.equalTo(removeAllButton.snp.bottom).offset(5)
@@ -91,14 +66,14 @@ extension SearchViewController: ViewConfiguration {
         }
     }
     
-    func configureView() {
+    override func configureView() {
         outlineView.isHidden = true
         
-        recentSearchedHistoryLabel.text = "최근 검색어"
+        recentSearchedHistoryLabel.text = Constants.recentLabelText
         recentSearchedHistoryLabel.sizeToFit()
         
         var config = UIButton.Configuration.plain()
-        config.title = "전체 삭제"
+        config.title = Constants.removeAllText
         config.baseForegroundColor = .black
         removeAllButton.configuration = config
         removeAllButton.sizeToFit()
@@ -109,11 +84,32 @@ extension SearchViewController: ViewConfiguration {
         tableView.backgroundColor = .clear
         
         noHistoryLabel.font = .boldSystemFont(ofSize: 20)
-        noHistoryLabel.text = "검색 결과가 없습니다"
+        noHistoryLabel.text = Constants.emptyHistoryText
         noHistoryLabel.sizeToFit()
         noHistoryLabel.backgroundColor = .clear
     }
+}
+
+extension SearchViewController {
+    private func initNavigationBar() {
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.automaticallyShowsCancelButton = true
+        searchController.searchBar.placeholder = Constants.searchBarPlaceHolder
+        searchController.searchBar.delegate = self
+        
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        navigationItem.title = Constants.title
+    }
     
+    private func initTableView() {
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(SearchHistoryTableViewCell.self, forCellReuseIdentifier: SearchHistoryTableViewCell.id)
+    }
+}
+
+extension SearchViewController {
     private func toggleUI() {
         outlineView.isHidden = searchHistoryList.isEmpty
         noHistoryLabel.isHidden = !searchHistoryList.isEmpty
@@ -122,10 +118,10 @@ extension SearchViewController: ViewConfiguration {
     private func search(_ keyword: String) {
         let url = UrlComponent.Query.parameters(query: keyword).result
         
-        NetworkManager.shared.requestAPI(url) { [self] data in // data의 type annotation이 없는데 어떻게 decoding이 자동으로 되는걸까???
+        NetworkManager.shared.requestAPI(url) { [self] data in
             let vc = SearchResultViewController()
             vc.keyword = keyword
-            vc.result = data // 이걸 보고 타입 추론을 하는건가
+            vc.result = data // vc.result type으로 추론, vc.result가 아닌 다른 타입의 변수/상수에 할당하는 순간 타입명시가 필요하다는 컴파일 에러 발생
             configureNavigationBar(vc)
             navigationController?.pushViewController(vc, animated: true)
         }

@@ -6,10 +6,8 @@
 //
 
 import UIKit
-import Kingfisher
-import SnapKit
 
-class SearchResultCollectionViewCell: UICollectionViewCell {
+class SearchResultCollectionViewCell: BaseCollectionViewCell {
     
     private let productImageView = UIImageView()
     private let shopNameLabel = UILabel()
@@ -18,42 +16,14 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
     
     static let id = getId()
     
-    override init(frame: CGRect) {
-        super.init(frame: .zero)
-        configureHierarchy()
-        configureLayout()
-        configureView()
-    }
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        productImageView.image = nil
-        shopNameLabel.text = nil
-        productNameLabel.text = nil
-        priceLabel.text = nil
-    }
-    
-    func configureData(_ item: Item) {
-        productImageView.kf.setImage(with: URL(string: item.image))
-        shopNameLabel.text = item.mallName
-        productNameLabel.text = item.title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil)
-        priceLabel.text = "\((Int(item.lprice) ?? 0).formatted())"
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-extension SearchResultCollectionViewCell: ViewConfiguration {
-    func configureHierarchy() {
+    override func configureHierarchy() {
         contentView.addSubview(productImageView)
         contentView.addSubview(shopNameLabel)
         contentView.addSubview(productNameLabel)
         contentView.addSubview(priceLabel)
     }
     
-    func configureLayout() {
+    override func configureLayout() {
         productImageView.snp.makeConstraints { make in
             make.top.horizontalEdges.equalToSuperview()
             make.width.equalToSuperview()
@@ -77,7 +47,7 @@ extension SearchResultCollectionViewCell: ViewConfiguration {
         }
     }
     
-    func configureView() {
+    override func configureView() {
         productImageView.contentMode = .scaleToFill
         productImageView.layer.cornerRadius = 10
         productImageView.layer.masksToBounds = true
@@ -94,5 +64,20 @@ extension SearchResultCollectionViewCell: ViewConfiguration {
         priceLabel.sizeToFit()
         priceLabel.font = .boldSystemFont(ofSize: 16)
         priceLabel.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        productImageView.image = nil
+        shopNameLabel.text = nil
+        productNameLabel.text = nil
+        priceLabel.text = nil
+    }
+    
+    func configureData(_ item: Item) {
+        productImageView.kf.setImage(with: URL(string: item.image))
+        shopNameLabel.text = item.mallName
+        productNameLabel.text = item.title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil)
+        priceLabel.text = "\((Int(item.lprice) ?? 0).formatted())"
     }
 }

@@ -7,7 +7,7 @@
 
 import UIKit
 
-class SearchResultViewController: UIViewController {
+class SearchResultViewController: BaseViewController {
     
     var result: Shopping?
     var keyword: String?
@@ -44,15 +44,44 @@ class SearchResultViewController: UIViewController {
         
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         title = keyword
-        configureHierarchy()
-        configureLayout()
-        configureView()
         configureButtons()
         initCollectionView()
     }
     
+    override func configureHierarchy() {
+        view.addSubview(totalLabel)
+        view.addSubview(stackView)
+        view.addSubview(collecionView)
+    }
+    
+    override func configureLayout() {
+        totalLabel.snp.makeConstraints { make in
+            make.top.leading.equalTo(view.safeAreaLayoutGuide).inset(10)
+        }
+        
+        stackView.snp.makeConstraints { make in
+            make.top.equalTo(totalLabel.snp.bottom).offset(5)
+            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(10)
+        }
+
+        collecionView.snp.makeConstraints { make in
+            make.bottom.horizontalEdges.equalToSuperview()
+            make.top.equalTo(stackView.snp.bottom).offset(10)
+        }
+    }
+    
+    override func configureView() {
+        totalLabel.text = "\(result?.total.formatted() ?? "")\(Constants.searchResultSuffix)"
+        totalLabel.textColor = .systemPink
+
+        stackView.axis = .horizontal
+        stackView.distribution = .fillProportionally
+        stackView.spacing = 5
+    }
+}
+
+extension SearchResultViewController {
     private func flowLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         let numberOfItemsInLine: CGFloat = 2
@@ -104,39 +133,6 @@ class SearchResultViewController: UIViewController {
             collecionView.reloadData()
             collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: true)
         }
-    }
-}
-
-extension SearchResultViewController: ViewConfiguration {
-    func configureHierarchy() {
-        view.addSubview(totalLabel)
-        view.addSubview(stackView)
-        view.addSubview(collecionView)
-    }
-    
-    func configureLayout() {
-        totalLabel.snp.makeConstraints { make in
-            make.top.leading.equalTo(view.safeAreaLayoutGuide).inset(10)
-        }
-        
-        stackView.snp.makeConstraints { make in
-            make.top.equalTo(totalLabel.snp.bottom).offset(5)
-            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(10)
-        }
-
-        collecionView.snp.makeConstraints { make in
-            make.bottom.horizontalEdges.equalToSuperview()
-            make.top.equalTo(stackView.snp.bottom).offset(10)
-        }
-    }
-    
-    func configureView() {
-        totalLabel.text = "\(result?.total.formatted() ?? "") 개의 검색 결과"
-        totalLabel.textColor = .systemPink
-
-        stackView.axis = .horizontal
-        stackView.distribution = .fillProportionally
-        stackView.spacing = 5
     }
 }
 

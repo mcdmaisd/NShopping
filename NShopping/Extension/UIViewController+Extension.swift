@@ -9,7 +9,7 @@ import UIKit
 extension UIViewController {
     func presentAlert(message: String?) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        alert.addAction(UIAlertAction(title: Constants.okActionTitle, style: .default))
         present(alert, animated: true)
     }
     
@@ -20,7 +20,7 @@ extension UIViewController {
     
     func configureNavigationBar(_ vc: UIViewController) {
         let backBarButtonItem = UIBarButtonItem(title: nil, style: .plain, target: self, action: #selector(back))
-        let image = UIImage(systemName: "chevron.backward")
+        let image = UIImage(systemName: Constants.backImageName)
 
         backBarButtonItem.tintColor = .black
         backBarButtonItem.image = image
