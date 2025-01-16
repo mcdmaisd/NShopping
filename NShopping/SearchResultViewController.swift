@@ -99,15 +99,10 @@ class SearchResultViewController: UIViewController {
         let sortingOption = UrlConstant.sortingKeys[index]
         let url = Url.Querys.parameters(query: keyword ?? "" , sort: sortingOption).result
         
-        requestAPI(url) { [self] value in
-            switch value {
-            case .success(let success):
-                result = success
-                collecionView.reloadData()
-                collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: true)
-            case .failure(let failure):
-                dump(failure)
-            }
+        requestAPI(url) { [self] data in
+            result = data
+            collecionView.reloadData()
+            collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: true)
         }
     }
 }
@@ -163,25 +158,25 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
 
 extension SearchResultViewController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        print(#function, indexPaths)
-        let tag = sortingButtons.filter { $0.isSelected }.first?.tag ?? -1
-        guard let item = result else { return }
+        guard
+            let tag = sortingButtons.filter({ $0.isSelected }).first?.tag,
+            let item = result
+        else { return }
+        
         let total = item.total
+        
         if total <= start { return }
+        
         for index in indexPaths {
             if item.items.count - 4 == index.row {
                 start += UrlConstant.display
+                
                 let sortingOption = UrlConstant.sortingKeys[tag]
                 let url = Url.Querys.parameters(query: keyword ?? "" , sort: sortingOption, start: start).result
 
-                requestAPI(url) { [self] value in
-                    switch value {
-                    case .success(let success):
-                        result?.items.append(contentsOf: success.items)
-                        collecionView.reloadData()
-                    case .failure(let failure):
-                        dump(failure)
-                    }
+                requestAPI(url) { [self] (data: Shopping) in
+                    result?.items.append(contentsOf: data.items)
+                    collecionView.reloadData()
                 }
             }
         }
@@ -190,6 +185,4 @@ extension SearchResultViewController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
         print(#function, indexPaths)
     }
-    
-    
 }

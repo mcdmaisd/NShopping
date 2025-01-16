@@ -122,17 +122,12 @@ extension SearchViewController: ViewConfiguration {
     private func search(_ keyword: String) {
         let url = Url.Querys.parameters(query: keyword).result
         
-        requestAPI(url) { [self] result in
-            switch result {
-            case .success(let success):
-                let vc = SearchResultViewController()
-                vc.keyword = keyword
-                vc.result = success
-                configureNavigationBar(vc)
-                navigationController?.pushViewController(vc, animated: true)
-            case .failure(let failure):
-                dump(failure)
-            }
+        requestAPI(url) { [self] data in
+            let vc = SearchResultViewController()
+            vc.keyword = keyword
+            vc.result = data
+            configureNavigationBar(vc)
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
     
