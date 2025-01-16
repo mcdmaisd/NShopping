@@ -13,7 +13,7 @@ class SearchResultViewController: UIViewController {
     var keyword: String?
     
     private let totalLabel = UILabel()
-    
+
     private var start = UrlConstant.start
     private var stackView = UIStackView()
     private var sortingButtons: [UIButton] = []
@@ -97,9 +97,9 @@ class SearchResultViewController: UIViewController {
         start = UrlConstant.start
         
         let sortingOption = UrlConstant.sortingKeys[index]
-        let url = Url.Querys.parameters(query: keyword ?? "" , sort: sortingOption).result
+        let url = UrlComponent.Query.parameters(query: keyword ?? "" , sort: sortingOption).result
         
-        requestAPI(url) { [self] data in
+        NetworkManager.shared.requestAPI(url) { [self] data in
             result = data
             collecionView.reloadData()
             collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: true)
@@ -172,9 +172,9 @@ extension SearchResultViewController: UICollectionViewDataSourcePrefetching {
                 start += UrlConstant.display
                 
                 let sortingOption = UrlConstant.sortingKeys[tag]
-                let url = Url.Querys.parameters(query: keyword ?? "" , sort: sortingOption, start: start).result
+                let url = UrlComponent.Query.parameters(query: keyword ?? "" , sort: sortingOption, start: start).result
 
-                requestAPI(url) { [self] (data: Shopping) in
+                NetworkManager.shared.requestAPI(url) { [self] (data: Shopping) in
                     result?.items.append(contentsOf: data.items)
                     collecionView.reloadData()
                 }

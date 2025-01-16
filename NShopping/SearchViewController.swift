@@ -120,12 +120,12 @@ extension SearchViewController: ViewConfiguration {
     }
     
     private func search(_ keyword: String) {
-        let url = Url.Querys.parameters(query: keyword).result
+        let url = UrlComponent.Query.parameters(query: keyword).result
         
-        requestAPI(url) { [self] data in
+        NetworkManager.shared.requestAPI(url) { [self] data in // data의 type annotation이 없는데 어떻게 decoding이 자동으로 되는걸까???
             let vc = SearchResultViewController()
             vc.keyword = keyword
-            vc.result = data
+            vc.result = data // 이걸 보고 타입 추론을 하는건가
             configureNavigationBar(vc)
             navigationController?.pushViewController(vc, animated: true)
         }
@@ -173,6 +173,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
 extension SearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let keyword = searchBar.text?.replacingOccurrences(of: " ", with: "") else { return }
+        
         if !keyword.isEmpty {
             search(keyword)
             if searchHistoryList.contains(keyword) {
@@ -182,6 +183,7 @@ extension SearchViewController: UISearchBarDelegate {
             searchHistoryList.insert(keyword, at: 0)
             view.endEditing(true)
         }
+        
         searchBar.text?.removeAll()
     }
 }

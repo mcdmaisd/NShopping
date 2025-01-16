@@ -12,17 +12,16 @@ struct UrlConstant {
     static let start = 1
     static let sortingKeys = ["sim", "date", "dsc", "asc"]
     static let sortingTitles = ["정확도", "날짜순", "가격높은순", "가격낮은순"]
-    
 }
 
-enum Url: String {
+enum UrlComponent: String {
     case baseUrl = "https://openapi.naver.com/v1/search/shop.json?"
     case queryPrefix = "query="
     case sortPrefix = "&sort="
     case displayPrefix = "&display="
     case startPrefix = "&start="
     
-    enum Querys {
+    enum Query {
         case parameters(
             query: String,
             sort: String = UrlConstant.sortingKeys[0],
