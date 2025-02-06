@@ -5,7 +5,7 @@
 //  Created by ilim on 2025-01-16.
 //
 
-import UIKit
+import Foundation
 import Alamofire
 
 class NetworkManager {

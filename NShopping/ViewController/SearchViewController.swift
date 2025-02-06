@@ -6,33 +6,42 @@
 //
 
 import UIKit
+import OrderedCollections
 
 class SearchViewController: BaseViewController {
-    
+    private let viewModel = SearchViewModel()
     private let outlineView = UIView()
     private let tableView = UITableView()
     private let noHistoryLabel = UILabel()
     private let recentSearchedHistoryLabel = UILabel()
     private let removeAllButton = UIButton()
-        
-    private var searchHistoryList: [String] = UserDefaultsManager.shared.list {
-        willSet {
-            UserDefaultsManager.shared.list = newValue
-        }
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         initNavigationBar()
         initTableView()
+        binding()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        toggleUI()
-        tableView.reloadData()
+    private func binding() {
+        viewModel.searchHistory.bind { list in
+            self.toggleUI(list)
+            self.tableView.reloadData()
+        }
+        
+        viewModel.emptyKeyword.lazyBind { _ in
+            self.presentAlert(message: Constants.alertMessage)
+        }
+        
+        viewModel.searchResult.lazyBind { result in
+            let vc = SearchResultViewController()
+            vc.viewModel.result.value = result
+            vc.viewModel.keyword = self.viewModel.keyword.value
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
+
     }
-    
+        
     override func configureHierarchy() {
         view.addSubview(outlineView)
         outlineView.addSubview(removeAllButton)
@@ -110,76 +119,59 @@ extension SearchViewController {
 }
 
 extension SearchViewController {
-    private func toggleUI() {
-        outlineView.isHidden = searchHistoryList.isEmpty
-        noHistoryLabel.isHidden = !searchHistoryList.isEmpty
+    private func toggleUI(_ list: OrderedSet<String>) {//
+        outlineView.isHidden = list.isEmpty
+        noHistoryLabel.isHidden = !list.isEmpty
     }
     
-    private func search(_ keyword: String) {
+    private func search(_ keyword: String) {//
         let url = UrlComponent.Query.parameters(query: keyword).result
         
         NetworkManager.shared.requestAPI(url) { [self] data in
             let vc = SearchResultViewController()
             vc.keyword = keyword
-            vc.result = data // vc.result type으로 추론, vc.result가 아닌 다른 타입의 변수/상수에 할당하는 순간 타입명시가 필요하다는 컴파일 에러 발생
+            vc.result = data
             configureNavigationBar(vc)
             navigationController?.pushViewController(vc, animated: true)
         }
     }
-    
-    private func renewData() {
-        toggleUI()
-        tableView.reloadData()
-    }
-    
+        
     @objc
-    private func cancelButtonTapped(_ sender: UIButton) {
-        searchHistoryList.remove(at: sender.tag)
-        renewData()
+    private func removeButtonTapped(_ sender: UIButton) {
+        viewModel.removeButtonTapped.value = sender.tag
     }
     
     @objc
     private func removeAllButtonTapped() {
-        searchHistoryList.removeAll()
-        renewData()
+        viewModel.removeAllButtonTapped.value = ()
     }
 }
 
 extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        searchHistoryList.count
+        viewModel.searchHistory.value.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let row = indexPath.row
         let cell = tableView.dequeueReusableCell(withIdentifier: SearchHistoryTableViewCell.id, for: indexPath) as! SearchHistoryTableViewCell
         
-        cell.cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
-        cell.configureData(searchHistoryList[row], row)
+        cell.cancelButton.addTarget(self, action: #selector(removeButtonTapped), for: .touchUpInside)
+        cell.configureData(viewModel.searchHistory.value[row], row)
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        search(searchHistoryList[indexPath.row])
+        search(viewModel.searchHistory.value[indexPath.row])
     }
 }
 
 extension SearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        guard let keyword = searchBar.text?.replacingOccurrences(of: " ", with: "") else { return }
-        
-        if !keyword.isEmpty {
-            search(keyword)
-            if searchHistoryList.contains(keyword) {
-                let index = searchHistoryList.firstIndex(of: keyword) ?? -1
-                searchHistoryList.remove(at: index)
-            }
-            searchHistoryList.insert(keyword, at: 0)
-            view.endEditing(true)
-        }
-        
+        viewModel.searchButtonTapped.value = searchBar.text ?? ""
+        view.endEditing(true)
         searchBar.text?.removeAll()
     }
 }

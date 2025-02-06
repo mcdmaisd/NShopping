@@ -8,13 +8,11 @@
 import UIKit
 
 class SearchResultViewController: BaseViewController {
-    
-    var result: Shopping?
-    var keyword: String?
+    let viewModel = SearchResultViewModel()
     
     private let totalLabel = UILabel()
 
-    private var start = UrlConstant.start
+    private lazy var start = viewModel.result.value?.start
     private var stackView = UIStackView()
     private var sortingButtons: [UIButton] = []
     
@@ -44,9 +42,14 @@ class SearchResultViewController: BaseViewController {
         
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = keyword
+        title = viewModel.keyword
         configureButtons()
         initCollectionView()
+        binding()
+    }
+    
+    private func binding() {
+        // filter button bind
     }
     
     override func configureHierarchy() {
@@ -72,7 +75,7 @@ class SearchResultViewController: BaseViewController {
     }
     
     override func configureView() {
-        totalLabel.text = "\(result?.total.formatted() ?? "")\(Constants.searchResultSuffix)"
+        totalLabel.text = "\(viewModel.result.value?.total.formatted() ?? "")\(Constants.searchResultSuffix)"
         totalLabel.textColor = .systemPink
 
         stackView.axis = .horizontal
@@ -131,21 +134,21 @@ extension SearchResultViewController {
         NetworkManager.shared.requestAPI(url) { [self] data in
             result = data
             collecionView.reloadData()
-            collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: true)
+            collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: false)
         }
     }
 }
 
 extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        result?.items.count ?? 0
+        viewModel.result.value?.items.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let row = indexPath.row
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.id, for: indexPath) as! SearchResultCollectionViewCell
         
-        guard let item = result?.items[row] else { return cell }
+        guard let item = viewModel.result.value?.items[row] else { return cell }
         cell.configureData(item)
         
         return cell
@@ -156,7 +159,7 @@ extension SearchResultViewController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         guard
             let tag = sortingButtons.filter({ $0.isSelected }).first?.tag,
-            let item = result
+            let item = viewModel.result.value
         else { return }
         
         let total = item.total
