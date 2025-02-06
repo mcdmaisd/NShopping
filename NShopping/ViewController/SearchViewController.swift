@@ -94,6 +94,7 @@ class SearchViewController: BaseViewController {
         
         noHistoryLabel.font = .boldSystemFont(ofSize: 20)
         noHistoryLabel.text = Constants.emptyHistoryText
+        noHistoryLabel.isHidden = true
         noHistoryLabel.sizeToFit()
         noHistoryLabel.backgroundColor = .clear
     }
@@ -123,19 +124,7 @@ extension SearchViewController {
         outlineView.isHidden = list.isEmpty
         noHistoryLabel.isHidden = !list.isEmpty
     }
-    
-    private func search(_ keyword: String) {//
-        let url = UrlComponent.Query.parameters(query: keyword).result
-        
-        NetworkManager.shared.requestAPI(url) { [self] data in
-            let vc = SearchResultViewController()
-            vc.keyword = keyword
-            vc.result = data
-            configureNavigationBar(vc)
-            navigationController?.pushViewController(vc, animated: true)
-        }
-    }
-        
+            
     @objc
     private func removeButtonTapped(_ sender: UIButton) {
         viewModel.removeButtonTapped.value = sender.tag
@@ -164,7 +153,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        search(viewModel.searchHistory.value[indexPath.row])
+        viewModel.searchButtonTapped.value = viewModel.searchHistory.value[indexPath.row]
     }
 }
 

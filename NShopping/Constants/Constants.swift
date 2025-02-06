@@ -12,7 +12,7 @@ struct Constants {
     static let title = "도봉러의 쇼핑쇼핑"
     static let recentLabelText = "최근 검색어"
     static let removeAllText = "전체 삭제"
-    static let emptyHistoryText = "검색 결과가 없습니다"
+    static let emptyHistoryText = "최근 검색 결과가 없습니다"
     static let alertMessage = "검색어는 최소 1자 이상 입력해주세요"
     static let okActionTitle = "확인"
     static let backImageName = "chevron.backward"

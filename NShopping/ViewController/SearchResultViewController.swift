@@ -12,7 +12,6 @@ class SearchResultViewController: BaseViewController {
     
     private let totalLabel = UILabel()
 
-    private lazy var start = viewModel.result.value?.start
     private var stackView = UIStackView()
     private var sortingButtons: [UIButton] = []
     
@@ -43,13 +42,29 @@ class SearchResultViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = viewModel.keyword
+        configureNavigationBar(self)
         configureButtons()
         initCollectionView()
         binding()
     }
     
     private func binding() {
-        // filter button bind
+        viewModel.selectedFilterButton.bind { tag in
+            for button in self.sortingButtons {
+                if button.tag == tag {
+                    button.isSelected = true
+                } else {
+                    button.isSelected = false
+                }
+            }
+        }
+        
+        viewModel.result.bind { _ in
+            self.collecionView.reloadData()
+            if self.viewModel.scrollToTop {
+                self.collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: false)
+            }
+        }
     }
     
     override func configureHierarchy() {
@@ -122,20 +137,7 @@ extension SearchResultViewController {
     @objc
     private func buttonTapped(_ sender: UIButton) {
         let index = sender.tag
-        
-        if sortingButtons[index].isSelected { return }
-        
-        sortingButtons.forEach { $0.isSelected = $0.tag == index ? true : false }
-        start = UrlConstant.start
-        
-        let sortingOption = UrlConstant.sortingKeys[index]
-        let url = UrlComponent.Query.parameters(query: keyword ?? "" , sort: sortingOption).result
-        
-        NetworkManager.shared.requestAPI(url) { [self] data in
-            result = data
-            collecionView.reloadData()
-            collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: false)
-        }
+        viewModel.filterButtonTapped.value = index
     }
 }
 
@@ -157,28 +159,7 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
 
 extension SearchResultViewController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        guard
-            let tag = sortingButtons.filter({ $0.isSelected }).first?.tag,
-            let item = viewModel.result.value
-        else { return }
-        
-        let total = item.total
-        
-        if total <= start { return }
-        
-        for index in indexPaths {
-            if item.items.count - 4 == index.row {
-                start += UrlConstant.display
-                
-                let sortingOption = UrlConstant.sortingKeys[tag]
-                let url = UrlComponent.Query.parameters(query: keyword ?? "" , sort: sortingOption, start: start).result
-
-                NetworkManager.shared.requestAPI(url) { [self] (data: Shopping) in
-                    result?.items.append(contentsOf: data.items)
-                    collecionView.reloadData()
-                }
-            }
-        }
+        viewModel.pagination.value = indexPaths
     }
     
     func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
