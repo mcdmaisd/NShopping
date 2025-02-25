@@ -1,21 +1,23 @@
 //
-//  SearchResultViewController.swift
-//  NShopping
+// SearchResultViewController.swift
+// NShopping
 //
-//  Created by ilim on 2025-01-15.
+// Created by ilim on 2025-01-15.
 //
 
 import UIKit
+import RxCocoa
+import RxSwift
 
 class SearchResultViewController: BaseViewController {
     let viewModel = SearchResultViewModel()
+    private let disposeBag = DisposeBag()
     
     private let totalLabel = UILabel()
-
     private var stackView = UIStackView()
     private var sortingButtons: [UIButton] = []
     
-    private lazy var collecionView = UICollectionView(frame: .zero, collectionViewLayout: flowLayout())
+    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: flowLayout())
     private lazy var sortingButton = { (_ title: String, _ tag: Int) in
         let button = UIButton()
         var config = UIButton.Configuration.filled()
@@ -23,7 +25,6 @@ class SearchResultViewController: BaseViewController {
         config.buttonSize = .small
         button.configuration = config
         button.tag = tag
-        button.addTarget(self, action: #selector(self.buttonTapped), for: .touchUpInside)
         button.titleLabel?.adjustsFontSizeToFitWidth = true
         button.configurationUpdateHandler = { btn in
             switch btn.state {
@@ -38,68 +39,89 @@ class SearchResultViewController: BaseViewController {
         }
         return button
     }
-        
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = viewModel.keyword
-        configureNavigationBar(self)
-        configureButtons()
-        initCollectionView()
-        binding()
+        configureUI()
+        bindViewModel()
     }
     
-    private func binding() {
-        viewModel.selectedFilterButton.bind { tag in
-            for button in self.sortingButtons {
-                if button.tag == tag {
-                    button.isSelected = true
-                } else {
-                    button.isSelected = false
+    private func bindViewModel() {
+        let input = SearchResultViewModel.Input(
+            filterButtonTapped: Observable.merge(
+                sortingButtons.map { button in
+                    button.rx.tap.map { _ in button.tag }
+                }
+            ),
+            pagination: collectionView.rx.prefetchItems.asObservable()
+        )
+        
+        let output = viewModel.transform(input: input)
+        
+        output.searchResult
+            .bind(with: self) { owner, shopping in
+                owner.totalLabel.text = "\(shopping?.count.formatted() ?? "0")개의 검색 결과"
+            }
+            .disposed(by: disposeBag)
+        
+        output.searchResult
+            .compactMap { $0 }
+            .bind(to: collectionView.rx.items(cellIdentifier: SearchResultCollectionViewCell.id, cellType: SearchResultCollectionViewCell.self)) { row, result, cell in
+                cell.configureData(result)
+            }
+            .disposed(by: disposeBag)
+        
+        output.selectedFilterButton
+            .bind(with: self) { owner, tag in
+                owner.sortingButtons.forEach { $0.isSelected = ($0.tag == tag) }
+            }
+            .disposed(by: disposeBag)
+        
+        output.scrollToTop
+            .bind(with: self) { owner, shouldScroll in
+                if shouldScroll {
+                    owner.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: false)
                 }
             }
-        }
-        
-        viewModel.result.bind { _ in
-            self.collecionView.reloadData()
-            if self.viewModel.scrollToTop {
-                self.collecionView.scrollToItem(at: IndexPath(item: -1, section: 0), at: .top, animated: false)
-            }
-        }
+            .disposed(by: disposeBag)
     }
     
-    override func configureHierarchy() {
+    private func configureUI() {
+        title = "검색 결과"
+        
         view.addSubview(totalLabel)
         view.addSubview(stackView)
-        view.addSubview(collecionView)
-    }
-    
-    override func configureLayout() {
-        totalLabel.snp.makeConstraints { make in
-            make.top.leading.equalTo(view.safeAreaLayoutGuide).inset(10)
-        }
+        view.addSubview(collectionView)
+        
+        collectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.id)
+        
+        totalLabel.snp.makeConstraints { make in make.top.leading.equalTo(view.safeAreaLayoutGuide).inset(10) }
         
         stackView.snp.makeConstraints { make in
             make.top.equalTo(totalLabel.snp.bottom).offset(5)
-            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(10)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(10)
+            make.height.equalTo(30)
         }
-
-        collecionView.snp.makeConstraints { make in
-            make.bottom.horizontalEdges.equalToSuperview()
+        
+        collectionView.snp.makeConstraints { make in
             make.top.equalTo(stackView.snp.bottom).offset(10)
+            make.leading.trailing.bottom.equalToSuperview()
         }
+        
+        stackView.axis = .horizontal
+        stackView.spacing = 10
+        stackView.distribution = .fillProportionally
+        
+        for (i, title) in UrlConstant.sortingTitles.enumerated() {
+            let button = sortingButton(title, i)
+            
+            stackView.addArrangedSubview(button)
+            sortingButtons.append(button)
+        }
+        
+        sortingButtons[0].isSelected = true
     }
     
-    override func configureView() {
-        totalLabel.text = "\(viewModel.result.value?.total.formatted() ?? "")\(Constants.searchResultSuffix)"
-        totalLabel.textColor = .systemPink
-
-        stackView.axis = .horizontal
-        stackView.distribution = .fillProportionally
-        stackView.spacing = 5
-    }
-}
-
-extension SearchResultViewController {
     private func flowLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         let numberOfItemsInLine: CGFloat = 2
@@ -114,55 +136,5 @@ extension SearchResultViewController {
         layout.sectionInset = UIEdgeInsets(top: 0, left: inset, bottom: inset, right: inset)
         
         return layout
-    }
-    
-    private func initCollectionView() {
-        collecionView.delegate = self
-        collecionView.dataSource = self
-        collecionView.prefetchDataSource = self
-        collecionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.id)
-    }
-    
-    private func configureButtons() {
-        for (i, title) in UrlConstant.sortingTitles.enumerated() {
-            let button = sortingButton(title, i)
-            
-            stackView.addArrangedSubview(button)
-            sortingButtons.append(button)
-        }
-        
-        sortingButtons[0].isSelected = true
-    }
-    
-    @objc
-    private func buttonTapped(_ sender: UIButton) {
-        let index = sender.tag
-        viewModel.filterButtonTapped.value = index
-    }
-}
-
-extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        viewModel.result.value?.items.count ?? 0
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let row = indexPath.row
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.id, for: indexPath) as! SearchResultCollectionViewCell
-        
-        guard let item = viewModel.result.value?.items[row] else { return cell }
-        cell.configureData(item)
-        
-        return cell
-    }
-}
-
-extension SearchResultViewController: UICollectionViewDataSourcePrefetching {
-    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        viewModel.pagination.value = indexPaths
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
-        print(#function, indexPaths)
     }
 }
