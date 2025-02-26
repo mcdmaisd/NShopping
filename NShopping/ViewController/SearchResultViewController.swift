@@ -42,21 +42,28 @@ class SearchResultViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureNavigationBar(self)
         configureUI()
-        bindViewModel()
+        bind()
     }
     
-    private func bindViewModel() {
+    private func bind() {
         let input = SearchResultViewModel.Input(
             filterButtonTapped: Observable.merge(
                 sortingButtons.map { button in
                     button.rx.tap.map { _ in button.tag }
                 }
             ),
-            pagination: collectionView.rx.prefetchItems.asObservable()
+            pagination: collectionView.rx.prefetchItems
         )
         
         let output = viewModel.transform(input: input)
+        
+        output.keyword
+            .bind(with: self) { owner, title in
+                owner.title = title
+            }
+            .disposed(by: disposeBag)
         
         output.searchResult
             .bind(with: self) { owner, shopping in
@@ -89,8 +96,6 @@ class SearchResultViewController: BaseViewController {
     }
     
     private func configureUI() {
-        title = "검색 결과"
-        
         view.addSubview(totalLabel)
         view.addSubview(stackView)
         view.addSubview(collectionView)

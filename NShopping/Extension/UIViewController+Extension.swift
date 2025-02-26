@@ -13,11 +13,6 @@ extension UIViewController {
         present(alert, animated: true)
     }
     
-    @objc
-    private func back() {
-        navigationController?.popViewController(animated: true)
-    }
-    
     func configureNavigationBar(_ vc: UIViewController) {
         let backBarButtonItem = UIBarButtonItem(title: nil, style: .plain, target: self, action: #selector(back))
         let image = UIImage(systemName: Constants.backImageName)
@@ -25,5 +20,10 @@ extension UIViewController {
         backBarButtonItem.tintColor = .black
         backBarButtonItem.image = image
         vc.navigationItem.leftBarButtonItem = backBarButtonItem
+    }
+    
+    @objc
+    private func back() {
+        navigationController?.popViewController(animated: true)
     }
 }
