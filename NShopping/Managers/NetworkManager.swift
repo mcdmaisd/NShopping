@@ -31,6 +31,7 @@ class NetworkManager {
                         do {
                             let errorResponse = try JSONDecoder().decode(ErrorResponse.self, from: data)
                             observer.onError(NetworkError.apiError(errorResponse.errorMessage))
+                            showAlert(errorResponse.errorMessage)
                         } catch {
                             observer.onError(NetworkError.unknown(error))
                         }

@@ -21,13 +21,13 @@ class SearchResultViewModel {
     }
 
     struct Output {
-        let searchResult: BehaviorRelay<[Item]?>
+        let searchResult: BehaviorRelay<Shopping?>
         let selectedFilterButton: BehaviorRelay<Int>
         let scrollToTop: PublishRelay<Bool>
     }
 
     func transform(input: Input) -> Output {
-        let searchResult = BehaviorRelay<[Item]?>(value: result?.items)
+        let searchResult = BehaviorRelay<Shopping?>(value: result)
         let selectedFilterButton = BehaviorRelay<Int>(value: 0)
         let scrollToTop = PublishRelay<Bool>()
 
@@ -39,7 +39,7 @@ class SearchResultViewModel {
                 self.startIndex = UrlConstant.start
                 self.search(filter: UrlConstant.sortingKeys[filterIndex], index: self.startIndex)
                     .subscribe(onNext: { shopping in
-                        searchResult.accept(shopping.items)
+                        searchResult.accept(shopping)
                         scrollToTop.accept(true)
                     }, onError: { error in
                         showAlert(error.localizedDescription)
@@ -51,13 +51,13 @@ class SearchResultViewModel {
         input.pagination
             .subscribe(onNext: { [weak self] indexPaths in
                 guard let self = self else { return }
-                guard let currentItems = searchResult.value else { return }
+                guard let currentItems = searchResult.value?.items else { return }
                 if currentItems.count - 8 <= indexPaths.last?.row ?? 0 {
                     self.startIndex += UrlConstant.display
                     self.search(filter: UrlConstant.sortingKeys[selectedFilterButton.value], index: self.startIndex)
                         .subscribe(onNext: { shopping in
                             var updatedShopping = searchResult.value
-                            updatedShopping?.append(contentsOf: shopping.items)
+                            updatedShopping?.items.append(contentsOf: shopping.items)
                             searchResult.accept(updatedShopping)
                             scrollToTop.accept(false)
                         }, onError: { error in

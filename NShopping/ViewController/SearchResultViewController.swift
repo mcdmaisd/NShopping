@@ -60,16 +60,18 @@ class SearchResultViewController: BaseViewController {
         
         output.searchResult
             .bind(with: self) { owner, shopping in
-                owner.totalLabel.text = "\(shopping?.count.formatted() ?? "0")개의 검색 결과"
+                owner.totalLabel.text = "\(shopping?.total.formatted() ?? "0")개의 검색 결과"
             }
             .disposed(by: disposeBag)
         
         output.searchResult
-            .compactMap { $0 }
-            .bind(to: collectionView.rx.items(cellIdentifier: SearchResultCollectionViewCell.id, cellType: SearchResultCollectionViewCell.self)) { row, result, cell in
-                cell.configureData(result)
-            }
-            .disposed(by: disposeBag)
+            .compactMap { $0?.items }
+            .bind(to: collectionView.rx.items(
+                cellIdentifier: SearchResultCollectionViewCell.id,
+                cellType: SearchResultCollectionViewCell.self)) { row, result, cell in
+                    cell.configureData(result)
+                }
+                .disposed(by: disposeBag)
         
         output.selectedFilterButton
             .bind(with: self) { owner, tag in
@@ -118,8 +120,6 @@ class SearchResultViewController: BaseViewController {
             stackView.addArrangedSubview(button)
             sortingButtons.append(button)
         }
-        
-        sortingButtons[0].isSelected = true
     }
     
     private func flowLayout() -> UICollectionViewFlowLayout {
