@@ -14,17 +14,42 @@ class SearchViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     private let outlineView = UIView()
     private var searchBar = UISearchBar()
+    private let tableView = UITableView()
+    private let cancelTapped = PublishSubject<Int>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         initNavigationBar()
+        configureRightBarButtonItem(self, nil, "list.bullet")
+        initTableView()
         binding()
+    }
+    
+    override func configureHierarchy() {
+        addSubView(tableView)
+    }
+    
+    override func configureLayout() {
+        tableView.snp.makeConstraints { make in
+            make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+    }
+    
+    override func configureView() {
+        tableView.separatorStyle = .none
+        tableView.backgroundColor = .clear
+    }
+    
+    private func initTableView() {
+        tableView.register(SearchHistoryTableViewCell.self, forCellReuseIdentifier: SearchHistoryTableViewCell.id)
     }
     
     private func binding() {
         let input = SearchViewModel.Input(
             searchBarText: searchBar.rx.text.orEmpty,
-            searchButtonTapped: searchBar.rx.searchButtonClicked)
+            searchButtonTapped: searchBar.rx.searchButtonClicked,
+            cancelButtonTapped: cancelTapped,
+            tableViewCellTapped: tableView.rx.itemSelected)
         let output = viewModel.transform(input: input)
         
         output.searchResult
@@ -33,6 +58,24 @@ class SearchViewController: BaseViewController {
                 vc.viewModel.result = value
                 vc.viewModel.keyword = owner.viewModel.keyword
                 self.navigationController?.pushViewController(vc, animated: true)
+            }
+            .disposed(by: disposeBag)
+
+        output.searchHistory
+            .bind(to: tableView.rx.items(cellIdentifier: SearchHistoryTableViewCell.id, cellType: SearchHistoryTableViewCell.self)) { [weak self] row, keyword, cell in
+                guard let self else { return }
+                cell.selectionStyle = .none
+                cell.configureData(keyword, row)
+                cell.cancelButton.rx.tap
+                    .map { cell.cancelButton.tag }
+                    .bind(to: cancelTapped)
+                    .disposed(by: cell.disposeBag)
+            }
+            .disposed(by: disposeBag)
+        
+        navigationItem.rightBarButtonItem?.rx.tap
+            .bind(with: self) { owner, _ in
+                owner.navigationController?.pushViewController(WishViewController(), animated: true)
             }
             .disposed(by: disposeBag)
     }

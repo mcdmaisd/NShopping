@@ -6,9 +6,10 @@
 //
 
 import UIKit
+import RxSwift
 
 class SearchHistoryTableViewCell: BaseTableViewCell {
-
+    private(set) var disposeBag = DisposeBag()
     private let clockImage = UIImageView()
     private let keywordLabel = UILabel()
     let cancelButton = UIButton()
@@ -57,6 +58,7 @@ class SearchHistoryTableViewCell: BaseTableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        disposeBag = DisposeBag()
         keywordLabel.text = nil
     }
     

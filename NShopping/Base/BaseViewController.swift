@@ -24,7 +24,10 @@ class BaseViewController: UIViewController {
     func configureHierarchy() {}
     func configureLayout() {}
     func configureView() {}
-    
+    func addSubView(_ view: UIView) {
+        self.view.addSubview(view)
+    }
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

@@ -22,6 +22,19 @@ extension UIViewController {
         vc.navigationItem.leftBarButtonItem = backBarButtonItem
     }
     
+    func configureRightBarButtonItem(_ vc: UIViewController ,_ title: String? = nil, _ image: String? = nil) {
+        let barButtonItem = UIBarButtonItem(title: title, style: .plain, target: self, action: nil)
+        
+        barButtonItem.tintColor = .black
+        
+        if let image {
+            let buttonImage = UIImage(systemName: image)
+            barButtonItem.image = buttonImage
+        }
+        
+        vc.navigationItem.rightBarButtonItem = barButtonItem
+    }
+    
     @objc
     private func back() {
         navigationController?.popViewController(animated: true)

@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4F05544D2D6F3EAF00037B63 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 4F05544C2D6F3EAF00037B63 /* OrderedCollections */; };
 		4F2BB68B2D6E2DD5003E236D /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 4F2BB68A2D6E2DD5003E236D /* RxCocoa */; };
 		4F2BB68D2D6E2DD5003E236D /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4F2BB68C2D6E2DD5003E236D /* RxSwift */; };
 		4F8DA1452D379239005EA471 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 4F8DA1442D379239005EA471 /* .gitignore */; };
 		4F8DA1E32D379758005EA471 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 4F8DA1E22D379758005EA471 /* Kingfisher */; };
 		4F8DA1E62D379761005EA471 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4F8DA1E52D379761005EA471 /* SnapKit */; };
 		4F8DA1E92D37976B005EA471 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 4F8DA1E82D37976B005EA471 /* Alamofire */; };
-		4F91CEEA2D54AC40009664B0 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 4F91CEE92D54AC40009664B0 /* OrderedCollections */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,9 +49,9 @@
 			files = (
 				4F2BB68D2D6E2DD5003E236D /* RxSwift in Frameworks */,
 				4F8DA1E92D37976B005EA471 /* Alamofire in Frameworks */,
+				4F05544D2D6F3EAF00037B63 /* OrderedCollections in Frameworks */,
 				4F8DA1E32D379758005EA471 /* Kingfisher in Frameworks */,
 				4F2BB68B2D6E2DD5003E236D /* RxCocoa in Frameworks */,
-				4F91CEEA2D54AC40009664B0 /* OrderedCollections in Frameworks */,
 				4F8DA1E62D379761005EA471 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -99,9 +99,9 @@
 				4F8DA1E22D379758005EA471 /* Kingfisher */,
 				4F8DA1E52D379761005EA471 /* SnapKit */,
 				4F8DA1E82D37976B005EA471 /* Alamofire */,
-				4F91CEE92D54AC40009664B0 /* OrderedCollections */,
 				4F2BB68A2D6E2DD5003E236D /* RxCocoa */,
 				4F2BB68C2D6E2DD5003E236D /* RxSwift */,
+				4F05544C2D6F3EAF00037B63 /* OrderedCollections */,
 			);
 			productName = NShopping;
 			productReference = 4F8DA12C2D37920D005EA471 /* NShopping.app */;
@@ -135,8 +135,8 @@
 				4F8DA1E12D379758005EA471 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				4F8DA1E42D379761005EA471 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				4F8DA1E72D37976B005EA471 /* XCRemoteSwiftPackageReference "Alamofire" */,
-				4F91CEE82D54AC40009664B0 /* XCRemoteSwiftPackageReference "swift-collections" */,
 				4F2BB6892D6E2DD5003E236D /* XCRemoteSwiftPackageReference "RxSwift" */,
+				4F05544B2D6F3EAF00037B63 /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4F8DA12D2D37920D005EA471 /* Products */;
@@ -375,6 +375,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		4F05544B2D6F3EAF00037B63 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.4;
+			};
+		};
 		4F2BB6892D6E2DD5003E236D /* XCRemoteSwiftPackageReference "RxSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
@@ -407,17 +415,14 @@
 				minimumVersion = 5.10.2;
 			};
 		};
-		4F91CEE82D54AC40009664B0 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-collections.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.4;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4F05544C2D6F3EAF00037B63 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4F05544B2D6F3EAF00037B63 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
 		4F2BB68A2D6E2DD5003E236D /* RxCocoa */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4F2BB6892D6E2DD5003E236D /* XCRemoteSwiftPackageReference "RxSwift" */;
@@ -442,11 +447,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4F8DA1E72D37976B005EA471 /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
-		};
-		4F91CEE92D54AC40009664B0 /* OrderedCollections */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4F91CEE82D54AC40009664B0 /* XCRemoteSwiftPackageReference "swift-collections" */;
-			productName = OrderedCollections;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
