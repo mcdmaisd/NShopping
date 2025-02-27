@@ -15,6 +15,7 @@ class NetworkManager {
     private init() { }
     
     func requestAPI(_ url: String) -> Observable<Shopping> {
+        presentLoading()
         return Observable.create { observer in
             let headers: HTTPHeaders = [
                 "X-Naver-Client-Id": Naver.id,
@@ -26,7 +27,9 @@ class NetworkManager {
                 case .success(let value):
                     observer.onNext(value)
                     observer.onCompleted()
+                    hideLoading()
                 case .failure:
+                    hideLoading()
                     if let data = response.data {
                         do {
                             let errorResponse = try JSONDecoder().decode(ErrorResponse.self, from: data)
@@ -36,6 +39,7 @@ class NetworkManager {
                             observer.onError(NetworkError.unknown(error))
                         }
                     } else if let statusCode = response.response?.statusCode {
+                        hideLoading()
                         switch statusCode {
                         case 400:
                             observer.onError(NetworkError.statusCodeError(400, "잘못된 요청입니다."))
@@ -50,6 +54,7 @@ class NetworkManager {
                         }
                     } else {
                         observer.onError(NetworkError.invalidResponse)
+                        hideLoading()
                     }
                 }
             }

@@ -20,3 +20,12 @@ func presentToast(_ message: String) {
     window.makeToast(message, duration: 1, point: center, title: nil, image: nil, style: style, completion: nil)
 }
 
+func presentLoading() {
+    let window = UIApplication.shared.getCurrentScene()
+    window.makeToastActivity(.center)
+}
+
+func hideLoading() {
+    let window = UIApplication.shared.getCurrentScene()
+    window.hideToastActivity()
+}
