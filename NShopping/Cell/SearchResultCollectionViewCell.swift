@@ -13,6 +13,7 @@ class SearchResultCollectionViewCell: BaseCollectionViewCell {
     private let shopNameLabel = UILabel()
     private let productNameLabel = UILabel()
     private let priceLabel = UILabel()
+    private let likeButton = LikeButton()
     
     static let id = getId()
     
@@ -21,6 +22,7 @@ class SearchResultCollectionViewCell: BaseCollectionViewCell {
         contentView.addSubview(shopNameLabel)
         contentView.addSubview(productNameLabel)
         contentView.addSubview(priceLabel)
+        contentView.addSubview(likeButton)
     }
     
     override func configureLayout() {
@@ -28,6 +30,11 @@ class SearchResultCollectionViewCell: BaseCollectionViewCell {
             make.top.horizontalEdges.equalToSuperview()
             make.width.equalToSuperview()
             make.height.equalTo(productImageView.snp.width)
+        }
+        
+        likeButton.snp.makeConstraints { make in
+            make.bottom.trailing.equalTo(productImageView).offset(-10)
+            make.size.equalTo(productImageView.snp.width).dividedBy(5)
         }
         
         shopNameLabel.snp.makeConstraints { make in
@@ -72,6 +79,7 @@ class SearchResultCollectionViewCell: BaseCollectionViewCell {
         shopNameLabel.text = nil
         productNameLabel.text = nil
         priceLabel.text = nil
+        likeButton.configureButton()
     }
     
     func configureData(_ item: Item) {
@@ -79,5 +87,6 @@ class SearchResultCollectionViewCell: BaseCollectionViewCell {
         shopNameLabel.text = item.mallName
         productNameLabel.text = item.title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil)
         priceLabel.text = "\((Int(item.lprice) ?? 0).formatted())"
+        likeButton.configureButton(item.productId)
     }
 }

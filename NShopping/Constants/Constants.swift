@@ -18,6 +18,10 @@ struct Constants {
     static let backImageName = "chevron.backward"
     static let searchResultSuffix = " 개의 검색 결과"
     static let arrayUserDefaultsKey = "stringArray"
+    static let productKey = "product"
+    static let heart = "heart"
+    static let heartFill = "heart.fill"
+    static let likeButtonMessages = [true: "제품이 보관되었습니다.", false: "제품이 삭제되었습니다."]
 }
 
 struct UrlConstant {

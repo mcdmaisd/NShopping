@@ -52,7 +52,6 @@ class SearchResultViewModel {
         
         input.pagination
             .bind(with: self, onNext: { owner, indexPaths in
-                owner.checkDuplication(searchResult.value!)
                 if owner.isNotFinished { return }
                 guard let currentItems = searchResult.value?.items else { return }
                 if currentItems.count - 15 <= (indexPaths.last?.row ?? 0) && !owner.isNotFinished {

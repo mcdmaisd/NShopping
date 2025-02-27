@@ -17,7 +17,7 @@ class UserDefaultsManager {
     private let key = Constants.arrayUserDefaultsKey
     
     private var savedList: OrderedSet<String> = []
-
+    
     private init() { }
     
     func save(list: OrderedSet<String>) {
@@ -28,7 +28,7 @@ class UserDefaultsManager {
             print("Failed to save")
         }
     }
-
+    
     func read() -> OrderedSet<String> {
         if let savedData = defaults.object(forKey: key) as? Data {
             do{
@@ -40,5 +40,13 @@ class UserDefaultsManager {
         }
         
         return savedList
+    }
+    
+    func set(_ value: Any, _ key: String) {
+        defaults.setValue(value, forKey: key)
+    }
+    
+    func get<T>(_ key: String, _ defaultValue: T) -> T {
+        defaults.object(forKey: key) as? T ?? defaultValue
     }
 }
