@@ -88,6 +88,7 @@ final class LikeViewController: BaseViewController {
                         owner.realm.delete(objects)
                     }
                     
+                    owner.searchBar.text?.removeAll()
                     owner.loadObject()
                 }
                 .disposed(by: cell.disposeBag)
