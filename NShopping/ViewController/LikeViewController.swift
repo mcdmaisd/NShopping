@@ -32,7 +32,7 @@ final class LikeViewController: BaseViewController {
         collectionView.backgroundColor = .clear
         collectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.id)
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         initNavigationBar()
@@ -40,11 +40,16 @@ final class LikeViewController: BaseViewController {
         loadObject()
     }
     
+    deinit {
+        print(self, #function)
+    }
+    
     private func initNavigationBar() {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.automaticallyShowsCancelButton = true
         searchController.searchBar.placeholder = Constants.searchBarPlaceHolder
-        
+        searchController.hidesNavigationBarDuringPresentation = false
+
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.title = "좋아요 목록"
@@ -60,25 +65,34 @@ final class LikeViewController: BaseViewController {
     private func bind() {
         list.bind(to: collectionView.rx.items(
             cellIdentifier: SearchResultCollectionViewCell.id,
-            cellType: SearchResultCollectionViewCell.self)) { [weak self] row, item, cell in
-                guard let self else { return }
-                let data = Item(
-                    title: item.title,
-                    link: item.detailURL,
-                    image: item.imageURL,
-                    lprice: item.price,
-                    mallName: item.mallName,
-                    productId: item.productId)
-                
-                cell.configureData(data)
-                cell.likeButton.button.rx.tap//버튼에서 삭제를 빼면 좋아요목록에서 삭제가 안되고... 버튼뷰모델로 다 보내면 딱인데
-                    .bind(with: self) { owner, _ in
-                        owner.loadObject()
-                        owner.collectionView.reloadData()
+            cellType: SearchResultCollectionViewCell.self
+        )) { [weak self] row, item, cell in
+            guard let self else { return }
+            
+            let data = Item(
+                title: item.title,
+                link: item.detailURL,
+                image: item.imageURL,
+                lprice: item.price,
+                mallName: item.mallName,
+                productId: item.productId
+            )
+            
+            cell.configureData(data)
+            cell.likeButton.button.rx.tap
+                .map { cell.likeButton.button.tag }
+                .bind(with: self) { owner, tag in
+                    let objects = owner.realm.objects(Likes.self).where { $0.productId == String(tag) }
+                    
+                    try? owner.realm.write {
+                        owner.realm.delete(objects)
                     }
-                    .disposed(by: cell.disposeBag)
-            }
-            .disposed(by: disposeBag)
+                    
+                    owner.loadObject()
+                }
+                .disposed(by: cell.disposeBag)
+        }
+        .disposed(by: disposeBag)
         
         searchBar.rx.text.orEmpty
             .bind(with: self) { owner, text in
@@ -89,7 +103,7 @@ final class LikeViewController: BaseViewController {
                     return
                 }
                 
-                var filteredList = data.where {
+                let filteredList = data.where {
                     $0.title.contains(text, options: .caseInsensitive)
                 }
                 

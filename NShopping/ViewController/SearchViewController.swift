@@ -86,7 +86,8 @@ extension SearchViewController {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.automaticallyShowsCancelButton = true
         searchController.searchBar.placeholder = Constants.searchBarPlaceHolder
-        
+        searchController.hidesNavigationBarDuringPresentation = false
+
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.title = Constants.title
