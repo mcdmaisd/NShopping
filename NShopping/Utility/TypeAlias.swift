@@ -9,4 +9,3 @@ import Foundation
 
 typealias C = Constants
 typealias U = UserDefaultsManager
-typealias DB = DataBaseManager
