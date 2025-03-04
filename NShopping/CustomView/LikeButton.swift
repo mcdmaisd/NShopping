@@ -12,8 +12,8 @@ import RxSwift
 final class LikeButton: BaseView {
     private let viewModel = LikeButtonViewModel()
     private let disposeBag = DisposeBag()
-    private let initialStatusRelay = PublishRelay<Int>()
-    private let button = UIButton()
+    private let initialStatus = PublishRelay<Int>()
+    private(set) var button = UIButton()
         
     override func configureHierarchy() {
         addView(button)
@@ -32,14 +32,12 @@ final class LikeButton: BaseView {
     
     private func bind() {
         let input = LikeButtonViewModel.Input(
-            initialButtonStatus: initialStatusRelay.asObservable(),
+            initialButtonStatus: initialStatus,
             likeButtonTapped: button.rx.tap.map { self.button.tag })
         let output = viewModel.transform(input: input)
         
         output.isSelected
-            .bind(with: self) { owner, result in
-                owner.button.isSelected = result
-            }
+            .drive(button.rx.isSelected)
             .disposed(by: disposeBag)
     }
     
@@ -50,10 +48,9 @@ final class LikeButton: BaseView {
     
     func configureButton(_ id: String = "") {
         let tag = Int(id) ?? 0
-        initialStatusRelay.accept(tag)
+        initialStatus.accept(tag)
 
         var config = UIButton.Configuration.filled()
-        
         config.baseBackgroundColor = .white
         config.baseForegroundColor = .systemPink
 

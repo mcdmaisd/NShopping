@@ -12,7 +12,8 @@ import RxSwift
 class SearchResultViewController: BaseViewController {
     let viewModel = SearchResultViewModel()
     private let disposeBag = DisposeBag()
-    
+    private let likeButton = PublishRelay<Int>()
+
     private let totalLabel = UILabel()
     private var stackView = UIStackView()
     private var sortingButtons: [UIButton] = []
@@ -54,7 +55,8 @@ class SearchResultViewController: BaseViewController {
                     button.rx.tap.map { _ in button.tag }
                 }
             ),
-            pagination: collectionView.rx.prefetchItems
+            pagination: collectionView.rx.prefetchItems,
+            likeButtonTapped: likeButton
         )
         
         let output = viewModel.transform(input: input)
@@ -75,8 +77,13 @@ class SearchResultViewController: BaseViewController {
             .compactMap { $0?.items }
             .bind(to: collectionView.rx.items(
                 cellIdentifier: SearchResultCollectionViewCell.id,
-                cellType: SearchResultCollectionViewCell.self)) { row, result, cell in
+                cellType: SearchResultCollectionViewCell.self)) { [weak self] row, result, cell in
+                    guard let self else { return }
                     cell.configureData(result)
+                    cell.likeButton.button.rx.tap
+                        .map { row }
+                        .bind(to: likeButton)
+                        .disposed(by: cell.disposeBag)
                 }
                 .disposed(by: disposeBag)
         
@@ -125,21 +132,5 @@ class SearchResultViewController: BaseViewController {
             stackView.addArrangedSubview(button)
             sortingButtons.append(button)
         }
-    }
-    
-    private func flowLayout() -> UICollectionViewFlowLayout {
-        let layout = UICollectionViewFlowLayout()
-        let numberOfItemsInLine: CGFloat = 2
-        let inset: CGFloat = 10
-        let screenWidth = UIScreen.main.bounds.width
-        let itemWidth = (screenWidth - (numberOfItemsInLine + 1) * inset) / numberOfItemsInLine
-        
-        layout.scrollDirection = .vertical
-        layout.itemSize = CGSize(width: itemWidth, height: itemWidth * 1.6)
-        layout.minimumLineSpacing = inset
-        layout.minimumInteritemSpacing = inset
-        layout.sectionInset = UIEdgeInsets(top: 0, left: inset, bottom: inset, right: inset)
-        
-        return layout
     }
 }

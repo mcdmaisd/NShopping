@@ -13,12 +13,12 @@ class LikeButtonViewModel {
     private let disposeBag = DisposeBag()
     
     struct Input {
-        let initialButtonStatus: Observable<Int>
+        let initialButtonStatus: PublishRelay<Int>
         let likeButtonTapped: Observable<Int>
     }
     
     struct Output {
-        let isSelected: PublishRelay<Bool>
+        let isSelected: Driver<Bool>
     }
     
     private func checkTagIsContains(tag: Int) -> Bool {
@@ -59,6 +59,6 @@ class LikeButtonViewModel {
             })
             .disposed(by: disposeBag)
         
-        return Output(isSelected: isSelected)
+        return Output(isSelected: isSelected.asDriver(onErrorJustReturn: false))
     }
 }

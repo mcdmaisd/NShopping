@@ -6,17 +6,16 @@
 //
 
 import UIKit
+import RxSwift
 
-class SearchResultCollectionViewCell: BaseCollectionViewCell {
-    
+final class SearchResultCollectionViewCell: BaseCollectionViewCell {
     private let productImageView = UIImageView()
     private let shopNameLabel = UILabel()
     private let productNameLabel = UILabel()
     private let priceLabel = UILabel()
-    private let likeButton = LikeButton()
-    
-    static let id = getId()
-    
+    private(set) var likeButton = LikeButton()
+    private(set) var disposeBag = DisposeBag()
+        
     override func configureHierarchy() {
         contentView.addSubview(productImageView)
         contentView.addSubview(shopNameLabel)
@@ -80,6 +79,7 @@ class SearchResultCollectionViewCell: BaseCollectionViewCell {
         productNameLabel.text = nil
         priceLabel.text = nil
         likeButton.configureButton()
+        disposeBag = DisposeBag()
     }
     
     func configureData(_ item: Item) {

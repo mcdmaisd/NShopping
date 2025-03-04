@@ -8,7 +8,7 @@
 import UIKit
 
 extension UICollectionViewCell {
-    static func getId() -> String {
-        return String(describing: self)
+    static var id: String {
+       return String(describing: self)
     }
 }

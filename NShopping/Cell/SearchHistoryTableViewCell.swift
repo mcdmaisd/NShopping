@@ -8,14 +8,12 @@
 import UIKit
 import RxSwift
 
-class SearchHistoryTableViewCell: BaseTableViewCell {
+final class SearchHistoryTableViewCell: BaseTableViewCell {
     private(set) var disposeBag = DisposeBag()
     private let clockImage = UIImageView()
     private let keywordLabel = UILabel()
     let cancelButton = UIButton()
-    
-    static let id = getId()
-    
+        
     override func configureHierarchy() {
         contentView.addSubview(clockImage)
         contentView.addSubview(keywordLabel)

@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import RealmSwift
 import RxSwift
 import RxCocoa
 
 class SearchResultViewModel {
     private let disposeBag = DisposeBag()
+    private let realm = try! Realm()
     private var startIndex = UrlConstant.start
     private var isNotFinished = false
     var result: Shopping?
@@ -19,6 +21,7 @@ class SearchResultViewModel {
     struct Input {
         let filterButtonTapped: Observable<Int>
         let pagination: ControlEvent<[IndexPath]>
+        let likeButtonTapped: PublishRelay<Int>
     }
     
     struct Output {
@@ -72,6 +75,13 @@ class SearchResultViewModel {
             })
             .disposed(by: disposeBag)
         
+        input.likeButtonTapped
+            .bind(with: self) { owner, index in
+                guard let item = searchResult.value?.items[index] else { return }
+                owner.transaction(item)
+            }
+            .disposed(by: disposeBag)
+        
         return Output(keyword: keyword,
                       searchResult: searchResult,
                       selectedFilterButton: selectedFilterButton,
@@ -82,6 +92,26 @@ class SearchResultViewModel {
         let list = data.items.map { $0.productId }
         let setList = Set(list)
         print("result:", list.count == setList.count, "list count: \(list.count), set count: \(setList.count)")
+    }
+    
+    private func transaction(_ item: Item) {
+        let product = realm.objects(Likes.self).where { $0.productId == item.productId }
+
+        do {
+            try realm.write {
+                let data = Likes(
+                    productId: item.productId,
+                    title: item.title,
+                    imageURL: item.image,
+                    detailURL: item.link,
+                    price: item.lprice,
+                    mallName: item.mallName)
+                
+                product.isEmpty ? realm.add(data) : realm.delete(product)
+            }
+        } catch {
+            print("Failed to save data")
+        }
     }
     
     private func search(filter: String, index: Int) -> Observable<Shopping> {

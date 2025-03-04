@@ -8,7 +8,7 @@
 import UIKit
 
 extension UITableViewCell {
-    static func getId() -> String {
+    static var id: String {
         return String(describing: self)
     }
 }
