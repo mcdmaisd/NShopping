@@ -15,6 +15,7 @@ final class Likes: Object {
     @Persisted var detailURL: String
     @Persisted var price: String
     @Persisted var mallName: String
+    @Persisted(originProperty: "likes") var folder: LinkingObjects<Folder>
     
     convenience init(productId: String, title: String, imageURL: String, detailURL: String, price: String, mallName: String) {
         self.init()
@@ -24,5 +25,18 @@ final class Likes: Object {
         self.detailURL = detailURL
         self.price = price
         self.mallName = mallName
+    }
+}
+
+final class MyProduct: Object {
+    @Persisted(primaryKey: true) var id = UUID()
+    @Persisted var name: String
+    @Persisted var date: String
+    @Persisted(originProperty: "myProduct") var folder: LinkingObjects<Folder>
+
+    convenience init(name: String) {
+        self.init()
+        self.name = name
+        self.date = Date().dateToString()
     }
 }

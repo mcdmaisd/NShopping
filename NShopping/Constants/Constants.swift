@@ -22,6 +22,7 @@ struct Constants {
     static let heart = "heart"
     static let heartFill = "heart.fill"
     static let likeButtonMessages = [true: "제품이 보관되었습니다.", false: "제품이 삭제되었습니다."]
+    static let folders = ["list1", "list2", "list3"]
 }
 
 struct UrlConstant {

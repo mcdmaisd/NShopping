@@ -16,6 +16,7 @@ class SearchViewController: BaseViewController {
     private var searchBar = UISearchBar()
     private let tableView = UITableView()
     private let removeButtonTapped = PublishSubject<Int>()
+    private let folder: FolderRepository = FolderTableRepository()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +24,13 @@ class SearchViewController: BaseViewController {
         configureRightBarButtonItem(self, nil, "list.bullet")
         initTableView()
         binding()
+        makeFolder()
+    }
+    
+    private func makeFolder() {
+        C.folders.forEach {
+            folder.createItem(name: $0)
+        }
     }
     
     override func configureHierarchy() {
@@ -75,7 +83,7 @@ class SearchViewController: BaseViewController {
         
         navigationItem.rightBarButtonItem?.rx.tap
             .bind(with: self) { owner, _ in
-                owner.navigationController?.pushViewController(LikeViewController(), animated: true)
+                owner.navigationController?.pushViewController(FolderViewController(), animated: true)
             }
             .disposed(by: disposeBag)
     }

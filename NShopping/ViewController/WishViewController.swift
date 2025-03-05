@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RealmSwift
 
 struct Product: Hashable {
     let id = UUID()
@@ -18,9 +19,15 @@ enum Section {
 }
 
 final class WishViewController: UIViewController {
+    private let repository: Repository = TableRepository()
+    private let folderRepository: FolderRepository = FolderTableRepository()
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
     private var dataSource: UICollectionViewDiffableDataSource<Section, Product>!
     private var list: [Product] = []
+    private lazy var folder = folderRepository.fetchAll().where { $0.id == id }.first!
+    
+    var wishlist: List<MyProduct>!
+    var id: ObjectId!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,7 +35,14 @@ final class WishViewController: UIViewController {
         configureUI()
         initCollectionView()
         configureDataSource()
+        convertData()
         updateSnapshot()
+    }
+    
+    private func convertData() {
+        list = folder.myProduct.map {
+            Product(name: $0.name)
+        }
     }
     
     private func initNavBar() {
@@ -93,15 +107,18 @@ final class WishViewController: UIViewController {
         searchController.automaticallyShowsCancelButton = true
         searchController.searchBar.placeholder = "사고싶은 제품 입력"
         searchController.searchBar.delegate = self
+        searchController.hidesNavigationBarDuringPresentation = false
         
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
-        navigationItem.title = "위시리스트"
+        navigationItem.title = folder.name
     }
 }
 
 extension WishViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let data = repository.fetchAll().where { $0.name == list[indexPath.row].name }.first!
+        repository.deleteItem(data: data)
         list.remove(at: indexPath.item)
         updateSnapshot()
     }
@@ -109,7 +126,11 @@ extension WishViewController: UICollectionViewDelegate {
 
 extension WishViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        list.append(Product(name: searchBar.text ?? ""))
+        let text = searchBar.text!
+        let product = MyProduct(name: text)
+        
+        repository.createItemInFolder(folder: folder, data: product)
+        list.append(Product(name: text))
         updateSnapshot()
     }
 }
